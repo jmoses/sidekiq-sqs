@@ -5,7 +5,7 @@ require 'sidekiq-sqs/manager'
 require 'sidekiq-sqs/fetcher'
 require 'sidekiq-sqs/client'
 require 'sidekiq-sqs/top_level'
-require 'sidekiq-sqs/processer'
+require 'sidekiq-sqs/processor'
 require 'sidekiq-sqs/middleware/compression'
 
 # TODO The retry server middleware directly writes to a retry zset.

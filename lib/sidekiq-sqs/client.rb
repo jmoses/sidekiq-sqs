@@ -36,10 +36,10 @@ module Sidekiq
 
           pushed ? payloads.size : nil
         end
-      end
 
-      def queue_or_create(queue)
-        Sidekiq.sqs.queues.named(queue) || Sidekiq.sqs.queues.create(queue)
+        def queue_or_create(queue)
+          Sidekiq.sqs.queues.named(queue) || Sidekiq.sqs.queues.create(queue)
+        end
       end
     end
   end
