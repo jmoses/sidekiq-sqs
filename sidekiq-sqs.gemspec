@@ -18,4 +18,6 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
 
   gem.add_dependency 'activesupport', '> 3.0.0'
+  gem.add_dependency 'sidekiq', '~> 2.3.2'
+  gem.add_dependency 'aws-sdk', '~> 1.6.6'
 end
