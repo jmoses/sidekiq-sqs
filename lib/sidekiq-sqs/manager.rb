@@ -3,6 +3,10 @@ module Sidekiq
     module Manager
       extend ActiveSupport::Concern
 
+      included do
+        remove_method :assign
+      end
+
       def assign(msg, queue)
         watchdog("Manager#assign died") do
           if stopped?

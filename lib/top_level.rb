@@ -1,8 +1,7 @@
 module Sidekiq
   module Sqs
     module TopLevel
-      module_function
-      def sqs
+      def self.sqs
         @sqs_connection ||= AWS::SQS.new
       end
     end

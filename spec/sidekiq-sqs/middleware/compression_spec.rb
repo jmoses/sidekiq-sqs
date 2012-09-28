@@ -12,15 +12,15 @@ describe Sidekiq::Sqs::Middleware::Compression do
     end
   end
 
-  context "Client" do
-    subject { Sidekiq::Sqs::Middleware::Compression::Client.new }
-    let(:message) { 'message' }
-
-    it "compresses the message and yields" do
-      expect {|b| subject.call(nil, message, :queue, &b) }.to yield_control 
-
-      message.should eq(Base64.encode64(Zlib::Deflate.deflate('message')))
-    end
-  end
+#  context "Client" do
+#    subject { Sidekiq::Sqs::Middleware::Compression::Client.new }
+#    let(:message) { 'message' }
+#
+#    it "compresses the message and yields" do
+#      expect {|b| subject.call(nil, message, :queue, &b) }.to yield_control 
+#
+#      message.should eq(Base64.encode64(Zlib::Deflate.deflate('message')))
+#    end
+#  end
 end
 

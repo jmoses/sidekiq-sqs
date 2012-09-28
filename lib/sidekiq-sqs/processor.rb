@@ -1,9 +1,18 @@
+require 'base64'
+require 'zlib'
+
 module Sidekiq
   module Sqs
     module Processor
-      def process(sqs_message, queue)
+      extend ActiveSupport::Concern
+
+      included do
+        alias_method_chain :process, :sqs
+      end
+
+      def process_with_sqs(sqs_message, queue)
         begin
-          super(sqs_message.body, queue)
+          process_without_sqs(Zlib::Inflate.inflate(Base64.decode64(sqs_message.body)), queue)
         ensure
           # FIXME Maybe we want to requeue here?
           sqs_message.delete
