@@ -10,7 +10,7 @@ Gem::Specification.new do |gem|
   gem.email         = ["jon@burningbush.us"]
   gem.description   = %q{SQS backed job store for Sidekiq. Redis is still used for stats/job worker tracking}
   gem.summary       = %q{SQS backed job store for Sidekiq}
-  gem.homepage      = ""
+  gem.homepage      = "http://github.com/jmoses/sidekiq-sqs"
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
