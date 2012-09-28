@@ -5,6 +5,7 @@ require 'sidekiq-sqs/manager'
 require 'sidekiq-sqs/fetcher'
 require 'sidekiq-sqs/client'
 require 'sidekiq-sqs/processor'
+require 'sidekiq-sqs/worker'
 
 # TODO The retry server middleware directly writes to a retry zset.
 # TODO Need a queue-prefix option to support multiple rails envs
@@ -22,6 +23,7 @@ module Sidekiq
       Sidekiq::Fetcher.send :include, Sidekiq::Sqs::Fetcher
       Sidekiq::Client.send :include, Sidekiq::Sqs::Client
       Sidekiq::Processor.send :include, Sidekiq::Sqs::Processor
+      Sidekiq::Worker::ClassMethods.send :extend, Sidekiq::Sqs::Worker
 
       # Can't figure how to include/extend and not get a private method...
       def Sidekiq.sqs
