@@ -23,7 +23,7 @@ module Sidekiq
       Sidekiq::Fetcher.send :include, Sidekiq::Sqs::Fetcher
       Sidekiq::Client.send :include, Sidekiq::Sqs::Client
       Sidekiq::Processor.send :include, Sidekiq::Sqs::Processor
-      Sidekiq::Worker::ClassMethods.send :extend, Sidekiq::Sqs::Worker
+      Sidekiq::Worker::ClassMethods.send :include, Sidekiq::Sqs::Worker
 
       # Can't figure how to include/extend and not get a private method...
       def Sidekiq.sqs

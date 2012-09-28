@@ -39,7 +39,7 @@ module Sidekiq
           end.compact
 
           pushed = false
-          queue = Sidekiq.sqs.queues.named(normed['queue'])
+          queue = queue_or_create(normed['queue'])
 
           payloads.each_slice(10) do |items|
             ## FIXME error handling
