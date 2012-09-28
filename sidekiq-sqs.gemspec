@@ -8,8 +8,8 @@ Gem::Specification.new do |gem|
   gem.version       = Sidekiq::Sqs::VERSION
   gem.authors       = ["Jon Moses"]
   gem.email         = ["jon@burningbush.us"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
+  gem.description   = %q{SQS backed job store for Sidekiq. Redis is still used for stats/job worker tracking}
+  gem.summary       = %q{SQS backed job store for Sidekiq}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($/)
