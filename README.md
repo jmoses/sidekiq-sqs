@@ -1,6 +1,10 @@
 # Sidekiq::Sqs
 
-TODO: Write a gem description
+This is a gem that modifies Sidekiq to use Amazon's SQS as a job store.  It
+still requires Redis for stats and such, and worker tracking.
+
+It works currently. There's zero tests, and we're not using it in production, so
+you might want to be careful.
 
 ## Installation
 
@@ -18,7 +22,16 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Once the gem is required, (and aws-sdk is configured) simply do:
+
+    Sidekiq::Sqs.enable!
+
+That'll turn it all on. Nothing else _should_ have to change.
+
+## Caveats
+
+* Scheduling is completely broken
+* ?
 
 ## Contributing
 
