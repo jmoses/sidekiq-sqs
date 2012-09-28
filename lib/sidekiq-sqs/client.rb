@@ -50,7 +50,11 @@ module Sidekiq
         end
 
         def queue_or_create(queue)
-          Sidekiq.sqs.queues.create(queue.to_s)
+          begin
+            Sidekiq.sqs.queues.named(queue.to_s)
+          rescue AWS::SQS::Errors::NonExistentQueue
+            Sidekiq.sqs.queues.create(queue.to_s)
+          end
         end
 
         def process_single_with_sqs(worker_class, item)
