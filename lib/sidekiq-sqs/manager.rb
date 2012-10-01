@@ -11,12 +11,7 @@ module Sidekiq
       def initialize_with_sqs(options = {})
         initialize_without_sqs(options)
 
-        @fetchers = [@fetcher]
-        4.times do
-          @fetchers << ::Sidekiq::Fetcher.new(current_actor, options[:queues], !!options[:strict])
-        end
-        
-        @fetcher = nil
+        @fetcher = Fetcher.pool(args: [current_actor, options[:queues], !!options[:strict]])
       end
 
       def assign(msg, queue)

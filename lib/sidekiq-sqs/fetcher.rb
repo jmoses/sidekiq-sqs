@@ -16,10 +16,6 @@ module Sidekiq
         @unique_queues = @queues.uniq
       end
 
-      def busy?
-        @busy
-      end
-
       # TODO Since there's only one fetcher per manager, we run into the issue
       #      where it takes longer to fetch a single job that it does to process,
       #      on average, so that we have waiting workers even if we have jobs in the
@@ -32,7 +28,6 @@ module Sidekiq
       #      up again.  I wonder if that would be 'good enough'
       def fetch
         watchdog('Fetcher#fetch died') do
-          @busy = true
           return if Sidekiq::Fetcher.done?
 
           begin
@@ -59,8 +54,6 @@ module Sidekiq
             logger.error(ex.backtrace.first)
             sleep(self.class::TIMEOUT)
             after(0) { fetch }
-          ensure
-            @busy = false
           end
         end
       end
