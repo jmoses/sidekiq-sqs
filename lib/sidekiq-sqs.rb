@@ -1,4 +1,5 @@
 require 'active_support'
+require 'aws-sdk'
 
 require "sidekiq-sqs/version"
 require 'sidekiq-sqs/manager'

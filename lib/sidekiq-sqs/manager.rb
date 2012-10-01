@@ -11,7 +11,7 @@ module Sidekiq
       def initialize_with_sqs(options = {})
         initialize_without_sqs(options)
 
-        @fetcher = Fetcher.pool(args: [current_actor, options[:queues], !!options[:strict]])
+        @fetcher = Sidekiq::Fetcher.pool(args: [current_actor, options[:queues], !!options[:strict]])
       end
 
       def assign(msg, queue)
@@ -39,7 +39,7 @@ module Sidekiq
 
           @done = true
           Sidekiq::Fetcher.done!
-          @fetchers.each {|f| f.terminate! if f.alive? }
+          @fetcher.finalize
 
           logger.info { "Shutting down #{@ready.size} quiet workers" }
           @ready.each { |x| x.terminate if x.alive? }
@@ -67,11 +67,7 @@ module Sidekiq
         raise "BUG: No processors, cannot continue!" if @ready.empty? && @busy.empty?
         raise "No ready processor!?" if @ready.empty?
 
-        if fetcher = @fetchers.reject(&:busy?).sample
-          fetcher.fetch!
-        else
-          after(0) { dispatch }
-        end
+        @fetcher.fetch!
       end
     end
   end
