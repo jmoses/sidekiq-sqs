@@ -28,7 +28,7 @@ module Sidekiq
 
       # Can't figure how to include/extend and not get a private method...
       def Sidekiq.sqs
-        @sqs_connection ||= AWS::SQS.new
+        AWS::SQS.new
       end
 
       Sidekiq.configure_server do |config|
