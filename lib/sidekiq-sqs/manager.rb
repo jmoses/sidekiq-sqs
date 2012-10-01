@@ -4,7 +4,19 @@ module Sidekiq
       extend ActiveSupport::Concern
 
       included do
-        remove_method :assign
+        remove_method :assign, :dispatch, :stop
+        alias_method_chain :initialize, :sqs
+      end
+
+      def initialize_with_sqs(options = {})
+        initialize_without_sqs(options)
+
+        @fetchers = [@fetcher]
+        4.times do
+          @fetchers << ::Sidekiq::Fetcher.new(current_actor, options[:queues], !!options[:strict])
+        end
+        
+        @fetcher = nil
       end
 
       def assign(msg, queue)
@@ -22,6 +34,48 @@ module Sidekiq
             @busy << processor
             processor.process!(msg, queue)
           end
+        end
+      end
+
+      def stop(options={})
+        watchdog('Manager#stop died') do
+          shutdown = options[:shutdown]
+          timeout = options[:timeout]
+
+          @done = true
+          Sidekiq::Fetcher.done!
+          @fetchers.each {|f| f.terminate! if f.alive? }
+
+          logger.info { "Shutting down #{@ready.size} quiet workers" }
+          @ready.each { |x| x.terminate if x.alive? }
+          @ready.clear
+
+          logger.debug { "Clearing workers in redis" }
+          Sidekiq.redis do |conn|
+            workers = conn.smembers('workers')
+            workers.each do |name|
+              conn.srem('workers', name) if name =~ /:#{process_id}-/
+            end
+          end
+
+          return after(0) { signal(:shutdown) } if @busy.empty?
+          logger.info { "Pausing up to #{timeout} seconds to allow workers to finish..." }
+          hard_shutdown_in timeout if shutdown
+        end
+      end
+
+      private
+      def dispatch
+        return if stopped?
+        # This is a safety check to ensure we haven't leaked
+        # processors somehow.
+        raise "BUG: No processors, cannot continue!" if @ready.empty? && @busy.empty?
+        raise "No ready processor!?" if @ready.empty?
+
+        if fetcher = @fetchers.reject(&:busy?).sample
+          fetcher.fetch!
+        else
+          after(0) { dispatch }
         end
       end
     end
