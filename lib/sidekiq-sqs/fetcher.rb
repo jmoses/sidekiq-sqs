@@ -10,10 +10,9 @@ module Sidekiq
 
       def initialize_with_sqs(mgr, queues, strict)
         initialize_without_sqs(mgr, queues, strict)
-        
-        # Fix Queue names
         @queues = @queues.map {|queue| queue.gsub(/^queue:/, '') }
-        @unique_queues = @queues.uniq
+
+        @queue_manager = Sidekiq::Sqs::QueueManager.new(@queues, strict)
       end
 
       def fetch
@@ -24,12 +23,8 @@ module Sidekiq
             queue = nil
             msg = nil
 
-            ## FIXME
-            queues = queues_cmd
-            queues.pop # Last entry is TIMEOUT
-
-            msg = queues.inject(nil) do |message, queue|
-              message || Sidekiq.sqs.queues.named(queue).receive_message
+            msg = @queue_manager.fetch.inject(nil) do |message, queue|
+              message || AWS::SQS::Queue.new(queue).receive_message
             end
 
             if msg
@@ -43,6 +38,24 @@ module Sidekiq
             sleep(self.class::TIMEOUT)
             after(0) { fetch }
           end
+        end
+      end
+
+      # TODO - not even tested that it tries to work
+      def ok_to_process_queue(queue, max_concurrent) # Granularity: second
+        ts = Time.now.to_i
+        keyname = "#{queue}:#{ts}"
+        current_running = Sidekiq.redis {|r| r.get keyname }
+        if current.nil? || current < max_concurrent
+          false
+        else
+          Sidekiq.redis do |r|
+            r.multi do
+              r.incr keyname, 1
+              r.expire keyname, 10
+            end
+          end
+          true
         end
       end
     end

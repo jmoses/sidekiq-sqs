@@ -3,6 +3,7 @@ require 'aws-sdk'
 
 require "sidekiq-sqs/version"
 require 'sidekiq-sqs/manager'
+require 'sidekiq-sqs/queue_manager'
 require 'sidekiq-sqs/fetcher'
 require 'sidekiq-sqs/client'
 require 'sidekiq-sqs/processor'
