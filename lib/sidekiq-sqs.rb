@@ -7,6 +7,7 @@ require 'sidekiq-sqs/fetcher'
 require 'sidekiq-sqs/client'
 require 'sidekiq-sqs/processor'
 require 'sidekiq-sqs/worker'
+require 'sidekiq-sqs/aws-sdk/batch_send_failure_patch'
 
 # TODO The retry server middleware directly writes to a retry zset.
 # TODO Need a queue-prefix option to support multiple rails envs
@@ -25,6 +26,7 @@ module Sidekiq
       Sidekiq::Client.send :include, Sidekiq::Sqs::Client
       Sidekiq::Processor.send :include, Sidekiq::Sqs::Processor
       Sidekiq::Worker::ClassMethods.send :include, Sidekiq::Sqs::Worker
+      AWS::SQS::Queue.send :include, Sidekiq::Sqs::AwsSdk::BatchSendFailurePatch
 
       # Can't figure how to include/extend and not get a private method...
       def Sidekiq.sqs
