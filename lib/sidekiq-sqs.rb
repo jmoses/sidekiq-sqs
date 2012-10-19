@@ -7,7 +7,6 @@ require 'sidekiq-sqs/fetcher'
 require 'sidekiq-sqs/client'
 require 'sidekiq-sqs/processor'
 require 'sidekiq-sqs/worker'
-require 'sidekiq-sqs/util'
 require 'sidekiq-sqs/aws-sdk/batch_send_failure_patch'
 
 # TODO The retry server middleware directly writes to a retry zset.
@@ -21,13 +20,13 @@ module Sidekiq
       require 'sidekiq/fetch'
       require 'sidekiq/client'
       require 'sidekiq/processor'
+      require 'sidekiq-sqs/util'
 
       Sidekiq::Manager.send :include, Sidekiq::Sqs::Manager
       Sidekiq::Fetcher.send :include, Sidekiq::Sqs::Fetcher
       Sidekiq::Client.send :include, Sidekiq::Sqs::Client
       Sidekiq::Processor.send :include, Sidekiq::Sqs::Processor
       Sidekiq::Worker::ClassMethods.send :include, Sidekiq::Sqs::Worker
-      Sidekiq::Util.send :include, Sidekiq::Sqs::Util
       AWS::SQS::Queue.send :include, Sidekiq::Sqs::AwsSdk::BatchSendFailurePatch
 
       # Can't figure how to include/extend and not get a private method...

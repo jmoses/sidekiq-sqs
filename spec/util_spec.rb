@@ -1,11 +1,12 @@
 require 'spec_helper'
 
-Sidekiq::Util.send :include, Sidekiq::Sqs::Util
 class UtilTest
   include Sidekiq::Util
 end
 
-describe Sidekiq::Sqs::Util do
+require 'sidekiq-sqs/util'
+
+describe Sidekiq::Util do
   subject { UtilTest.new }
 
   describe ".constantize" do
