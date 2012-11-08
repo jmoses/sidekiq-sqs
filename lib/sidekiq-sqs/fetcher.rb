@@ -35,7 +35,7 @@ module Sidekiq
             if msg
               @mgr.assign!(msg, File.basename(msg.queue.url))
             else
-              after(0) { fetch }
+              after(5) { fetch }
             end
           rescue => ex
             logger.error("Error fetching message from queues (#{@queues.join(', ')}): #{ex}")

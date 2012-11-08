@@ -19,6 +19,11 @@ module Sidekiq
           sqs_message.delete
         end
       end
+
+      def stats(*args)
+        # FIXME this should, like, do stuff
+        yield
+      end
     end
   end
 end
