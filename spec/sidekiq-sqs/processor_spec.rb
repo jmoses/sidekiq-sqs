@@ -4,6 +4,10 @@ class StubProcessor
   def process(msg, queue)
   end
 
+  def stats(*args)
+    raise RuntimeError.new
+  end
+
   include Sidekiq::Sqs::Processor
 end
 
@@ -20,6 +24,12 @@ describe Sidekiq::Sqs::Processor do
       message.expects(:delete)
 
       subject.process(message, queue).should eq(:processed)
+    end
+  end
+
+  describe "#stats" do
+    it "just yields" do
+      expect {|b| subject.stats(&b) }.to yield_control
     end
   end
 end

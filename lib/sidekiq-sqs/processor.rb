@@ -7,6 +7,7 @@ module Sidekiq
       extend ActiveSupport::Concern
 
       included do
+        remove_method :stats
         alias_method_chain :process, :sqs
       end
 
