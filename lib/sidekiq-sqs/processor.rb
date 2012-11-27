@@ -16,6 +16,7 @@ module Sidekiq
           process_without_sqs(Zlib::Inflate.inflate(Base64.decode64(sqs_message.body)), queue)
         ensure
           # FIXME Maybe we want to requeue here, if there's a non-job related error?
+          # If retry = true, requeue here
           sqs_message.delete
         end
       end

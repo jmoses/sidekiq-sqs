@@ -35,6 +35,17 @@ module Sidekiq
       end
 
       module ClassMethods
+        def clear_queue(queue_name)
+          queue = queue_or_create(queue_name)
+
+          while message = queue.receive_message
+            message.delete
+          end
+
+          queue
+        end
+
+
         def push(item)
           normed = normalize_item(item)
           normed, payload = process_single(item['class'], normed)
