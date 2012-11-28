@@ -39,7 +39,7 @@ module Sidekiq
 
           @done = true
           Sidekiq::Fetcher.done!
-          @fetcher.finalize
+          #@fetcher.finalize
 
           logger.info { "Shutting down #{@ready.size} quiet workers" }
           @ready.each { |x| x.terminate if x.alive? }
