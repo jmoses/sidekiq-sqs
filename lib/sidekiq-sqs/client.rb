@@ -35,8 +35,18 @@ module Sidekiq
       end
 
       module ClassMethods
+        def environmental_queue_name(queue_name)
+          return queue_name unless defined?(::Rails)
+
+          if queue_name =~ /^#{::Rails.env}_/
+            queue_name
+          else
+            %(#{::Rails.env}_#{queue_name})
+          end
+        end
+
         def clear_queue(queue_name)
-          queue = queue_or_create(queue_name)
+          queue = queue_or_create(environmental_queue_name queue_name)
 
           while message = queue.receive_message
             message.delete
@@ -44,7 +54,6 @@ module Sidekiq
 
           queue
         end
-
 
         def push(item)
           normed = normalize_item(item)
@@ -129,6 +138,7 @@ module Sidekiq
         end
 
         def queue_or_create(queue)
+          queue = environmental_queue_name(queue)
           begin
             Sidekiq.sqs.queues.named(queue.to_s)
           rescue AWS::SQS::Errors::NonExistentQueue

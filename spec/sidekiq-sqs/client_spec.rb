@@ -28,6 +28,24 @@ describe Sidekiq::Sqs::Client do
     end
   end
 
+  describe ".environmental_queue_name" do
+    before do
+      if defined?(::Rails)
+        ::Rails.stubs(env: "test")
+      else
+        ::Rails = stub(env: "test")
+      end
+    end
+
+    it "prepends the environment name" do
+      subject.environmental_queue_name("queue").should eq("test_queue")
+    end
+
+    it "doesn't prepend if it's already prepended" do
+      subject.environmental_queue_name("test_queue").should eq("test_queue")
+    end
+  end
+
   describe ".bulk_send_to_sqs" do
     let(:retryable) do
       {:error_code => 'ServiceUnavailable', :message_body => "blarg"}
@@ -132,12 +150,14 @@ describe Sidekiq::Sqs::Client do
     before { Sidekiq.stubs(sqs: stub(queues: queues)) }
 
     it "returns the queue if it exists" do
+      subject.expects(:environmental_queue_name).with(queue).returns(queue)
       queues.expects(:named).with(queue).returns(:queue)
 
       subject.queue_or_create(queue).should eq(:queue)
     end
 
     it "creates the queue if it doesn't exists" do
+      subject.expects(:environmental_queue_name).with(queue).returns(queue)
       queues.expects(:named).with(queue).raises(AWS::SQS::Errors::NonExistentQueue.new)
       queues.expects(:create).with(queue).returns(:queue)
 

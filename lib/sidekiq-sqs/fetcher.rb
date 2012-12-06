@@ -12,7 +12,7 @@ module Sidekiq
         initialize_without_sqs(mgr, queues, strict)
         
         # Fix Queue names
-        @queues = @queues.map {|queue| queue.gsub(/^queue:/, '') }
+        @queues = @queues.map {|queue| Sidekiq::Client.environmental_queue_name queue.gsub(/^queue:/, '') }
         @unique_queues = @queues.uniq
       end
 
