@@ -1,6 +1,8 @@
 module Sidekiq
   module Sqs
     module Fetcher
+      QueueNotDoneError = Class.new(StandardError)
+
       extend ActiveSupport::Concern
 
       included do
@@ -29,7 +31,7 @@ module Sidekiq
             queues.pop # Last entry is TIMEOUT
 
             msg = queues.inject(nil) do |message, queue|
-              message || Sidekiq.sqs.queues.named(queue).receive_message
+              message || fetch_single_message(queue)
             end
 
             if msg
@@ -37,12 +39,29 @@ module Sidekiq
             else
               after(5) { fetch }
             end
+          rescue QueueNotDoneError
+            # Just wait
+            after(5) { fetch }
           rescue => ex
             logger.error("Error fetching message from queues (#{@queues.join(', ')}): #{ex}")
             logger.error(ex.backtrace.first)
             sleep(self.class::TIMEOUT)
             after(0) { fetch }
           end
+        end
+      end
+
+      def fetch_single_message(queue)
+        queue = Sidekiq.sqs.queues.named(queue)
+        message = queue.receive_message
+
+        if @strictly_ordered_queues && message.nil?
+          # If messages being processed, raise
+          if queue.invisible_messages != 0
+            raise QueueNotDoneError
+          end
+        else
+          message
         end
       end
     end

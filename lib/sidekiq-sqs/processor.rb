@@ -13,8 +13,9 @@ module Sidekiq
 
       def process_with_sqs(sqs_message, queue)
         begin
-          process_without_sqs(Zlib::Inflate.inflate(Base64.decode64(sqs_message.body)), queue)
-          sqs_message.delete
+          process_without_sqs(Zlib::Inflate.inflate(Base64.decode64(sqs_message.body)), queue).tap do
+            sqs_message.delete
+          end
         rescue Celluloid::Task::TerminatedError => error
           # If our thread was killed, requeue the job (SURE HOPE IT'S IDEMPOTENT!)
           sqs_message.visibility_timeout = 10 
