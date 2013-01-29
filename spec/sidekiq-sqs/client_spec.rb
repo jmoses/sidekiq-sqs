@@ -52,7 +52,7 @@ describe Sidekiq::Sqs::Client do
       let(:item) { { 'class' => :klass } }
 
       it "dispatches to .send_message with delay_seconds" do
-        normalized = { 'at' => 900, 'jid' => 'abc123' }
+        normalized = { 'at' => Time.now.to_f + 900, 'jid' => 'abc123' }
         subject.expects(:normalize_item).with(item).returns(normalized)
         subject.expects(:process_single).with(:klass, normalized).returns([normalized, :payload])
 
@@ -63,7 +63,7 @@ describe Sidekiq::Sqs::Client do
       end
 
       it "raises an error if the amount to delay is > 900 seconds" do
-        normalized = { 'at' => 901 }
+        normalized = { 'at' => Time.now.to_f + 901 }
         subject.expects(:normalize_item).with(item).returns(normalized)
         subject.expects(:process_single).with(:klass, normalized).returns([normalized, :payload])
         subject.stubs(:queue_or_create)

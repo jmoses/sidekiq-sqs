@@ -61,8 +61,9 @@ module Sidekiq
 
           pushed = false
           if normed['at']
-            raise "The number of seconds to delay should be from 0 to 900 (15 mins)." if normed['at'].to_i > 900
-            pushed = queue_or_create(normed['queue']).send_message(payload, { delay_seconds: normed['at'].to_i })
+            delay_seconds = (normed['at'] - Time.now.to_f).round
+            raise "The number of seconds to delay should be from 0 to 900 (15 mins)." if delay_seconds > 900
+            pushed = queue_or_create(normed['queue']).send_message(payload, { delay_seconds: delay_seconds })
           else
             pushed = queue_or_create(normed['queue']).send_message(payload)
           end if normed
