@@ -30,7 +30,7 @@ That'll turn it all on. Nothing else _should_ have to change.
 
 ## Caveats
 
-* Scheduling uses SQS message timers.  The amount of time you can schedule a message must be 0 to 900 seconds (15 mins).
+* Scheduling uses SQS message timers.  The amount of time you can schedule a worker must be 0 to 900 seconds (15 mins).
 * ?
 
 ## Contributing
