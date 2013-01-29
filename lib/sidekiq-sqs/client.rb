@@ -61,9 +61,8 @@ module Sidekiq
 
           pushed = false
           if normed['at']
-            # FIXME - SQS only supports a delay of 15.minutes
-            # probably a schedule queue? or keep this in redis??
-            pushed = conn.zadd('schedule', normed['at'].to_s, payload)
+            raise "The number of seconds to delay should be from 0 to 900 (15 mins)." if normed['at'].to_i > 900
+            pushed = queue_or_create(normed['queue']).send_message(payload, { delay_seconds: normed['at'].to_i })
           else
             pushed = queue_or_create(normed['queue']).send_message(payload)
           end if normed
@@ -122,7 +121,7 @@ module Sidekiq
 
         def send_batch_to_sqs(queue, formatted_items)
           failures, retryables = [], []
-          
+
           begin
             queue.batch_send(formatted_items)
           rescue AWS::SQS::Errors::BatchSendError => error
@@ -133,7 +132,7 @@ module Sidekiq
             failures.concat failed
             retryables.concat retryable
           end
-          
+
           [failures, retryables]
         end
 
