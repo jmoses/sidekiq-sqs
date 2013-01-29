@@ -46,6 +46,47 @@ describe Sidekiq::Sqs::Client do
     end
   end
 
+  describe ".push" do
+
+    context "when scheduling a job" do
+      let(:item) { { 'class' => :klass } }
+
+      it "dispatches to .send_message with delay_seconds" do
+        normalized = { 'at' => Time.now.to_f + 900, 'jid' => 'abc123' }
+        subject.expects(:normalize_item).with(item).returns(normalized)
+        subject.expects(:process_single).with(:klass, normalized).returns([normalized, :payload])
+
+        queue = mock { expects(:send_message).with(:payload, { delay_seconds: 900 }).returns(true) }
+        subject.stubs(queue_or_create: queue)
+
+        subject.push(item).should eq('abc123')
+      end
+
+      it "raises an error if the amount to delay is > 900 seconds" do
+        normalized = { 'at' => Time.now.to_f + 901 }
+        subject.expects(:normalize_item).with(item).returns(normalized)
+        subject.expects(:process_single).with(:klass, normalized).returns([normalized, :payload])
+        subject.stubs(:queue_or_create)
+
+        expect { subject.push(item) }.to raise_error
+      end
+
+    end
+
+    context "when queueing a job normally" do
+      let(:item) { { 'class' => :klass } }
+      let(:queue) { mock { expects(:send_message).with(:payload) } }
+
+      it "dispatches to .send_message" do
+        subject.expects(:normalize_item).with(item).returns(:normalized)
+        subject.expects(:process_single).with(:klass, :normalized).returns([:normalized, :payload])
+        subject.stubs(queue_or_create: queue)
+
+        subject.push(item)
+      end
+    end
+  end
+
   describe ".bulk_send_to_sqs" do
     let(:retryable) do
       {:error_code => 'ServiceUnavailable', :message_body => "blarg"}
