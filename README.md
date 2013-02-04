@@ -3,8 +3,8 @@
 This is a gem that modifies Sidekiq to use Amazon's SQS as a job store.  It
 still requires Redis for stats and such, and worker tracking.
 
-It works currently. There's zero tests, and we're not using it in production, so
-you might want to be careful.
+It works currently. There's very few tests, but we've been using it in production
+for a while.  Still, be careful
 
 ## Installation
 
@@ -31,6 +31,7 @@ That'll turn it all on. Nothing else _should_ have to change.
 ## Caveats
 
 * Scheduling uses SQS message timers.  The amount of time you can schedule a worker must be 0 to 900 seconds (15 mins).
+* Auto-retrying to insert jobs to SQS on failure (if SQS loses it's mind for a second) doesn't work. It should, but it doesn't.
 * ?
 
 ## Contributing
